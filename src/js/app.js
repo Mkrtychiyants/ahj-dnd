@@ -113,21 +113,22 @@ window.addEventListener('beforeunload', () => {
 
   localStorage.setItem('pageData', JSON.stringify(cards));
 });
-
 document.addEventListener('DOMContentLoaded', () => {
   const json = localStorage.getItem('pageData');
   let pageData = {};
   try {
     pageData = JSON.parse(json);
-    document.querySelector('div.trello-container').innerHTML = pageData;
+    if (pageData) {
+      document.querySelector('div.trello-container').innerHTML = pageData;
+    }
   } catch (error) {
     console.log(error);
+  } finally {
+    refreshCardsListener();
+    addCardListener();
+    addFormListener();
+    showDeleteButtons();
   }
-
-  refreshCardsListener();
-  addCardListener();
-  addFormListener();
-  showDeleteButtons();
 });
 
 refreshCardsListener();
