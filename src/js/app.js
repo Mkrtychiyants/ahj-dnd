@@ -4,6 +4,8 @@ import Card from './components/card';
 
 let currentElement;
 let cards;
+let cardGrabbed;
+let emptyElement;
 
 const onMouseOver = (e) => {
   currentElement.style.top = `${e.clientY}px`;
@@ -23,6 +25,11 @@ const hideCloseButton = (e) => {
     currentButton.classList.remove('active');
   }
 };
+const hideCloseBtn = (e) => {
+  currentElement = e.target.closest('div.card');
+  const btn = currentElement.querySelector('button.removeCard');
+  btn.classList.remove('active');
+};
 function showDeleteButtons() {
   cards = document.querySelectorAll('div.card');
   cards.forEach((element) => {
@@ -31,26 +38,53 @@ function showDeleteButtons() {
   });
 }
 const onMouseUp = (e) => {
-  const mouseUpItem = e.target.closest('div.card');
+  const mouseUpItem = e.target;
   const cardsContainer = e.target.closest('div.cards-container');
   cardsContainer.insertBefore(currentElement, mouseUpItem);
   currentElement.classList.remove('dragged');
+  currentElement.style.width = 'inherit';
   currentElement = undefined;
-
+  cardGrabbed = false;
   document.documentElement.removeEventListener('mouseup', onMouseUp);
-  document.documentElement.removeEventListener('mouseover', onMouseOver);
+  document.documentElement.removeEventListener('mousemove', onMouseOver);
   showDeleteButtons();
 };
-function hideDeleteButtons() {
+function removeDelBtnListeners() {
   cards = document.querySelectorAll('div.card');
   cards.forEach((element) => {
     element.removeEventListener('mouseover', showDeleteButton);
     element.removeEventListener('mouseout', hideCloseButton);
   });
 }
+function showEmptySpace(e) {
+  if (emptyElement) {
+    emptyElement.remove();
+  }
+  if (cardGrabbed) {
+    const mouseUpItem = e.target.closest('div.card');
+    emptyElement = document.createElement('div');
+    emptyElement.innerHTML = '<div></div>';
+    const cardsContainer = e.target.closest('div.cards-container');
+    const cardHeight = `${mouseUpItem.getBoundingClientRect().height}px`;
+    emptyElement.style.height = cardHeight;
+    if (cardsContainer) {
+      cardsContainer.insertBefore(emptyElement, mouseUpItem);
+    }
+  }
+}
+function insertEmptySpaceListeners() {
+  cards = document.querySelectorAll('div.card');
+  cards.forEach((element) => {
+    element.addEventListener('mouseenter', showEmptySpace);
+  });
+}
+
 const downOnCard = (e) => {
   e.preventDefault();
-  hideDeleteButtons();
+  cardGrabbed = true;
+  hideCloseBtn(e);
+  removeDelBtnListeners();
+
   if (e.target.closest('button.removeCard')) {
     currentElement = e.target.closest('div.card');
     currentElement.remove();
@@ -58,13 +92,12 @@ const downOnCard = (e) => {
     return;
   }
   currentElement = e.target.closest('div.card');
-  const cardWidth = `${currentElement.getBoundingClientRect().right - currentElement.getBoundingClientRect().left}px`;
+  const cardWidth = `${currentElement.getBoundingClientRect().width}px`;
   if (currentElement.classList.contains('card')) {
-    currentElement.style.width = cardWidth;
     currentElement.classList.add('dragged');
-
+    currentElement.style.width = cardWidth;
     document.documentElement.addEventListener('mouseup', onMouseUp);
-    document.documentElement.addEventListener('mouseover', onMouseOver);
+    document.documentElement.addEventListener('mousemove', onMouseOver);
   }
 
   document.documentElement.removeEventListener('mouseover', showDeleteButton);
@@ -128,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addCardListener();
     addFormListener();
     showDeleteButtons();
+    insertEmptySpaceListeners();
   }
 });
 
@@ -135,3 +169,4 @@ refreshCardsListener();
 addCardListener();
 addFormListener();
 showDeleteButtons();
+insertEmptySpaceListeners();

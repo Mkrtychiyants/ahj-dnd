@@ -18,8 +18,11 @@ body {
     
 }
 .trello-column {
+    display: flex;
+    flex-direction: column;
+  
     width: 30%;
-    height: 50%;
+    /* height: 50%; */
     padding: 8px;   
     background-color: #dfdcdc;
     border-radius: 5px;
@@ -38,8 +41,9 @@ body {
     border-radius: 5px;
     margin-bottom: 10px;
     box-shadow: 2px 4px rgb(142, 142, 142);
-   
+   width: inherit;
 }
+
 .card.dragged {
     position: absolute;
     z-index: 300;
@@ -61,6 +65,11 @@ body {
     display: block;
     position: relative;
     border-radius: 1px;
+    flex-grow: 4;
+}
+.cards-container {
+    box-sizing: border-box;
+    flex-grow: 4;
 }
 .addCard {
     display: block;
@@ -86,6 +95,7 @@ body {
     margin: 13px 5px;
     display: none;
 }
+
 .cardForm.vis{
     display: block;
 }
