@@ -30,6 +30,29 @@ const hideCloseBtn = (e) => {
   const btn = currentElement.querySelector('button.removeCard');
   btn.classList.remove('active');
 };
+function showEmptySpace(e) {
+  let cardHeight;
+  if (emptyElement) {
+    emptyElement.remove();
+  }
+  if (cardGrabbed) {
+    emptyElement = document.createElement('div');
+    emptyElement.innerHTML = '<div></div>';
+    const cardsColumn = e.target.closest('div.trello-column');
+    if (cardsColumn) {
+      const container = cardsColumn.querySelector('div.cards-container');
+      const mouseUpItem = e.target.closest('div.card');
+
+      if (mouseUpItem) {
+        cardHeight = `${mouseUpItem.getBoundingClientRect().height}px`;
+      } else {
+        cardHeight = `${currentElement.getBoundingClientRect().height}px`;
+      }
+      emptyElement.style.height = cardHeight;
+      container.insertBefore(emptyElement, mouseUpItem);
+    }
+  }
+}
 function showDeleteButtons() {
   cards = document.querySelectorAll('div.card');
   cards.forEach((element) => {
@@ -37,14 +60,32 @@ function showDeleteButtons() {
     element.addEventListener('mouseout', hideCloseButton);
   });
 }
+function removeEmptySpaceListeners() {
+  cards = document.querySelectorAll('div.card');
+  const trelloColumns = document.querySelectorAll('div.trello-column');
+  cards.forEach((element) => {
+    element.removeEventListener('mouseenter', showEmptySpace);
+  });
+  trelloColumns.forEach((element) => {
+    element.removeEventListener('mouseenter', showEmptySpace);
+  });
+}
 const onMouseUp = (e) => {
-  const mouseUpItem = e.target;
   const cardsContainer = e.target.closest('div.cards-container');
-  cardsContainer.insertBefore(currentElement, mouseUpItem);
-  currentElement.classList.remove('dragged');
-  currentElement.style.width = 'inherit';
-  currentElement = undefined;
-  cardGrabbed = false;
+  removeEmptySpaceListeners();
+  try {
+    if (cardsContainer) {
+      cardsContainer.insertBefore(currentElement, emptyElement);
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    currentElement.classList.remove('dragged');
+    currentElement.style.width = 'inherit';
+    emptyElement.remove();
+    currentElement = undefined;
+    cardGrabbed = false;
+  }
   document.documentElement.removeEventListener('mouseup', onMouseUp);
   document.documentElement.removeEventListener('mousemove', onMouseOver);
   showDeleteButtons();
@@ -56,25 +97,13 @@ function removeDelBtnListeners() {
     element.removeEventListener('mouseout', hideCloseButton);
   });
 }
-function showEmptySpace(e) {
-  if (emptyElement) {
-    emptyElement.remove();
-  }
-  if (cardGrabbed) {
-    const mouseUpItem = e.target.closest('div.card');
-    emptyElement = document.createElement('div');
-    emptyElement.innerHTML = '<div></div>';
-    const cardsContainer = e.target.closest('div.cards-container');
-    const cardHeight = `${mouseUpItem.getBoundingClientRect().height}px`;
-    emptyElement.style.height = cardHeight;
-    if (cardsContainer) {
-      cardsContainer.insertBefore(emptyElement, mouseUpItem);
-    }
-  }
-}
 function insertEmptySpaceListeners() {
   cards = document.querySelectorAll('div.card');
+  const trelloColumns = document.querySelectorAll('div.trello-column');
   cards.forEach((element) => {
+    element.addEventListener('mouseenter', showEmptySpace);
+  });
+  trelloColumns.forEach((element) => {
     element.addEventListener('mouseenter', showEmptySpace);
   });
 }
@@ -83,6 +112,7 @@ const downOnCard = (e) => {
   e.preventDefault();
   cardGrabbed = true;
   hideCloseBtn(e);
+  insertEmptySpaceListeners();
   removeDelBtnListeners();
 
   if (e.target.closest('button.removeCard')) {
@@ -161,7 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addCardListener();
     addFormListener();
     showDeleteButtons();
-    insertEmptySpaceListeners();
   }
 });
 
@@ -169,4 +198,3 @@ refreshCardsListener();
 addCardListener();
 addFormListener();
 showDeleteButtons();
-insertEmptySpaceListeners();
