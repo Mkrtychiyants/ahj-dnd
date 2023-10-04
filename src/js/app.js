@@ -52,6 +52,7 @@ function showEmptySpace(e) {
       container.insertBefore(emptyElement, mouseUpItem);
     }
   }
+  // emptyElement = undefined;
 }
 function showDeleteButtons() {
   cards = document.querySelectorAll('div.card');
@@ -119,6 +120,7 @@ const downOnCard = (e) => {
     currentElement = e.target.closest('div.card');
     currentElement.remove();
     showDeleteButtons();
+    removeEmptySpaceListeners();
     return;
   }
   currentElement = e.target.closest('div.card');
